@@ -10,7 +10,6 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.widget.Toast;
 
-import com.airbnb.android.BuildConfig;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableMap;
@@ -180,8 +179,8 @@ public class ReactNavigationCoordinator {
     return getOrDefault(screenName).initialConfig;
   }
 
-  public void start(final Application application) {
-    if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(application)) {
+  public void start(final Application application, boolean isDebug) {
+    if (isDebug && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(application)) {
       handleOverlayPermissionsMissing(application);
       return;
     }
