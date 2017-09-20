@@ -159,9 +159,7 @@ public class DefaultNavigationImplementation implements NavigationImplementation
 
       if (animated) {
         int curColor = activity.getWindow().getStatusBarColor();
-        ValueAnimator colorAnimation = ValueAnimator.ofObject(
-                new ArgbEvaluator(), curColor, color);
-
+        ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), curColor, color);
         colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
           @Override
           public void onAnimationUpdate(ValueAnimator animator) {
@@ -169,9 +167,7 @@ public class DefaultNavigationImplementation implements NavigationImplementation
           }
         });
 
-        colorAnimation
-                .setDuration(300)
-                .setStartDelay(0);
+        colorAnimation.setDuration(300).setStartDelay(0);
         colorAnimation.start();
       } else {
         activity.getWindow().setStatusBarColor(color);
