@@ -143,42 +143,46 @@ public class DefaultNavigationImplementation implements NavigationImplementation
       ReadableMap next,
       boolean firstCall
   ) {
-    if (firstCall || numberHasChanged("statusBarColor", prev, next)) {
+    boolean nextHasColor = next.hasKey("statusBarColor");
+
+    if ((nextHasColor && firstCall) || numberHasChanged("statusBarColor", prev, next)) {
       boolean animated = false;
+
       if (next.hasKey("statusBarAnimation")) {
         animated = !("none".equals(next.getString("statusBarAnimation")));
       }
 
       Integer color = defaults.statusBarColor;
-      if (next.hasKey("statusBarColor")) {
+      if (nextHasColor) {
         color = next.getInt("statusBarColor");
       }
 
       if (animated) {
         int curColor = activity.getWindow().getStatusBarColor();
-        ValueAnimator colorAnimation = ValueAnimator.ofObject(
-            new ArgbEvaluator(), curColor, color);
-
+        ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), curColor, color);
         colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
           @Override
           public void onAnimationUpdate(ValueAnimator animator) {
             activity.getWindow().setStatusBarColor((Integer) animator.getAnimatedValue());
           }
         });
-        colorAnimation
-            .setDuration(300)
-            .setStartDelay(0);
+
+        colorAnimation.setDuration(300).setStartDelay(0);
         colorAnimation.start();
       } else {
         activity.getWindow().setStatusBarColor(color);
       }
     }
 
-    if (firstCall || boolHasChanged("statusBarTranslucent", prev, next)) {
+    boolean nextHasTranslucent = next.hasKey("statusBarTranslucent");
+
+    if ((nextHasTranslucent && firstCall) || boolHasChanged("statusBarTranslucent", prev, next)) {
       boolean translucent = defaults.statusBarTranslucent;
-      if (next.hasKey("statusBarTranslucent")) {
+
+      if (nextHasTranslucent) {
         translucent = next.getBoolean("statusBarTranslucent");
       }
+
       View decorView = activity.getWindow().getDecorView();
       // If the status bar is translucent hook into the window insets calculations
       // and consume all the top insets so no padding will be added under the status bar.
@@ -374,14 +378,22 @@ public class DefaultNavigationImplementation implements NavigationImplementation
 
       if (firstCall || boolHasChanged("hidden", prev, next)) {
         boolean hidden = false;
+        ViewStub viewStub = component.getViewStub();
+        ViewGroup.MarginLayoutParams marginLayoutParams = (ViewGroup.MarginLayoutParams) viewStub.getLayoutParams();
 
         if (next.hasKey("hidden")) {
           hidden = next.getBoolean("hidden");
         }
 
         if (hidden && bar.isShowing()) {
+          marginLayoutParams.setMargins(0, 0, 0, 0);
           bar.hide();
         } else if (!hidden && !bar.isShowing()) {
+          TypedValue value = new TypedValue();
+          Resources.Theme currentTheme = viewStub.getContext().getTheme();
+          boolean hasValue = currentTheme.resolveAttribute(R.attr.actionBarSize, value, true);
+          int marginTop = hasValue ? value.data : 0;
+          marginLayoutParams.setMargins(0, marginTop, 0, 0);
           bar.show();
         }
       }

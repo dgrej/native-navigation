@@ -72,6 +72,7 @@ public class ReactNativeFragment extends Fragment implements ReactInterface,
   private ReadableMap renderedConfig = ConversionUtil.EMPTY_MAP;
   private ReactNativeFragmentViewGroup contentContainer;
   private ReactRootView reactRootView;
+  private ViewStub viewStub = null;
   //  private ReactInterfaceManager activityManager;
   private final Handler handler = new Handler();
   private PermissionListener permissionListener;
@@ -121,6 +122,7 @@ public class ReactNativeFragment extends Fragment implements ReactInterface,
     if (reactRootView != null || getView() == null) {
       return;
     }
+
     if (!isSuccessfullyInitialized()) {
       // TODO(lmr): need a different way of doing this
       // TODO(lmr): move to utils
@@ -156,9 +158,11 @@ public class ReactNativeFragment extends Fragment implements ReactInterface,
 
   private void onAttachWithReactContext() {
     Log.d(TAG, "onCreateWithReactContext");
+
     if (getView() == null) {
       return;
     }
+
     loadingView.setVisibility(View.GONE);
 
     if (!isSuccessfullyInitialized()) {
@@ -166,16 +170,22 @@ public class ReactNativeFragment extends Fragment implements ReactInterface,
 //      ReactNativeUtils.showAlertBecauseChecksFailed(getActivity(), null);
       return;
     }
+
     String moduleName = getArguments().getString(ReactNativeIntents.EXTRA_MODULE_NAME);
     Bundle props = getArguments().getBundle(ReactNativeIntents.EXTRA_PROPS);
+
     if (props == null) {
       props = new Bundle();
     }
+
     props.putString(INSTANCE_ID_PROP, instanceId);
 
+    if (viewStub == null || reactRootView == null) {
+      viewStub = (ViewStub) getView().findViewById(R.id.react_root_view_stub);
+    }
+
     if (reactRootView == null) {
-      ViewStub reactViewStub = (ViewStub) getView().findViewById(R.id.react_root_view_stub);
-      reactRootView = (ReactRootView) reactViewStub.inflate();
+      reactRootView = (ReactRootView) viewStub.inflate();
     }
 
     getImplementation().reconcileNavigationProperties(
@@ -367,6 +377,11 @@ public class ReactNativeFragment extends Fragment implements ReactInterface,
   @Override
   public ReactRootView getReactRootView() {
     return reactRootView;
+  }
+
+  @Override
+  public ViewStub getViewStub() {
+    return viewStub;
   }
 
   @Override
