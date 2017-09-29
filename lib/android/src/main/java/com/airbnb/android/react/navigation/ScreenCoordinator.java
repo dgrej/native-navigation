@@ -39,7 +39,7 @@ public class ScreenCoordinator {
 
   enum PresentAnimation {
     Modal(R.anim.slide_up, R.anim.delay, R.anim.delay, R.anim.slide_down),
-    Push(R.anim.slide_in_right, R.anim.slide_out_left, R.anim.slide_in_left, R.anim.slide_out_right),
+    Push(R.anim.slide_in_right, R.anim.no_animation, R.anim.no_animation, R.anim.slide_out_right),
     Fade(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out);
 
     @AnimRes int enter;
