@@ -109,6 +109,9 @@ public class ScreenCoordinator {
       ft.setCustomAnimations(anim.enter, anim.exit, anim.popEnter, anim.popExit);
     }
     BackStack bsi = getCurrentBackStack();
+    if (bsi == null) {
+      return;
+    }
     ft
             .detach(currentFragment)
             .add(container.getId(), fragment)
@@ -209,6 +212,9 @@ public class ScreenCoordinator {
 
   public void pop() {
     BackStack bsi = getCurrentBackStack();
+    if (bsi == null) {
+      return;
+    }
     if (bsi.getSize() == 1) {
       dismiss();
       return;
@@ -281,7 +287,10 @@ public class ScreenCoordinator {
   }
 
   private BackStack getCurrentBackStack() {
-    return backStacks.peek();
+    if (backStacks.size() > 0) {
+      return backStacks.peek();
+    }
+    return null;
   }
 
   @NonNull
