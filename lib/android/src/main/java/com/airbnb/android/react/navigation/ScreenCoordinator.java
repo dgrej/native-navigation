@@ -70,11 +70,41 @@ public class ScreenCoordinator {
   @AnimRes private int nextPopExitAnim;
 
   public ScreenCoordinator(AppCompatActivity activity, ScreenCoordinatorLayout container,
-      @Nullable Bundle savedInstanceState) {
+                           @Nullable Bundle savedInstanceState) {
     this.activity = activity;
     this.container = container;
     container.setFragmentManager(activity.getSupportFragmentManager());
     // TODO: restore state
+
+    restoreStack();
+  }
+
+  /**
+   * If there are Fragments in the Activity stack, restore them into our backStack. We know the
+   * order in which to restore the Fragments by tagging them with the size of the backStack at the
+   * time they were added.
+   *
+   * This is useful for when the app goes to background on a device with "Don't keep activities"
+   * turned on. It also restores the backStack in case Android kills the app due to memory pressure.
+   */
+  private void restoreStack() {
+    boolean hasFragments = true;
+    int fragmentIndex = 0;
+
+    while (hasFragments) {
+      Fragment fragment = activity.getSupportFragmentManager().findFragmentByTag(String.valueOf(fragmentIndex));
+      if (fragment != null) {
+        if (getCurrentBackStack() == null) {
+          BackStack backStack = new BackStack(getNextStackTag(), PresentAnimation.Modal, null);
+          backStacks.push(backStack);
+        }
+        getCurrentBackStack().pushFragment(fragment);
+
+        fragmentIndex++;
+      } else {
+        hasFragments = false;
+      }
+    }
   }
 
   void onSaveInstanceState(Bundle outState) {
@@ -103,7 +133,7 @@ public class ScreenCoordinator {
     }
 
     if (ViewUtils.isAtLeastLollipop() && options != null && options.containsKey(TRANSITION_GROUP)) {
-        setupFragmentForSharedElement(currentFragment,  fragment, ft, options);
+      setupFragmentForSharedElement(currentFragment,  fragment, ft, options);
     } else {
       PresentAnimation anim = PresentAnimation.Push;
       ft.setCustomAnimations(anim.enter, anim.exit, anim.popEnter, anim.popExit);
@@ -112,9 +142,10 @@ public class ScreenCoordinator {
     if (bsi == null) {
       return;
     }
+
     ft
             .detach(currentFragment)
-            .add(container.getId(), fragment)
+            .add(container.getId(), fragment, String.valueOf(bsi.getSize()))
             .addToBackStack(null)
             .commit();
     bsi.pushFragment(fragment);
@@ -143,10 +174,10 @@ public class ScreenCoordinator {
   }
 
   public void presentScreen(
-      String moduleName,
-      @Nullable Bundle props,
-      @Nullable Bundle options,
-      @Nullable Promise promise) {
+          String moduleName,
+          @Nullable Bundle props,
+          @Nullable Bundle options,
+          @Nullable Promise promise) {
     // TODO: use options
     Fragment fragment = ReactNativeFragment.newInstance(moduleName, props);
     presentScreen(fragment, PresentAnimation.Modal, promise);
@@ -182,18 +213,19 @@ public class ScreenCoordinator {
     backStacks.push(bsi);
     // TODO: dry this up with pushScreen
     FragmentTransaction ft = activity.getSupportFragmentManager().beginTransaction()
-        .setAllowOptimization(true)
-        .setCustomAnimations(anim.enter, anim.exit, anim.popEnter, anim.popExit);
+            .setAllowOptimization(true)
+            .setCustomAnimations(anim.enter, anim.exit, anim.popEnter, anim.popExit);
 
     Fragment currentFragment = getCurrentFragment();
     if (currentFragment != null && !isFragmentTranslucent(fragment)) {
       container.willDetachCurrentScreen();
       ft.detach(currentFragment);
     }
+
     ft
-        .add(container.getId(), fragment)
-        .addToBackStack(bsi.getTag())
-        .commit();
+            .add(container.getId(), fragment, String.valueOf(bsi.getSize()))
+            .addToBackStack(bsi.getTag())
+            .commit();
     activity.getSupportFragmentManager().executePendingTransactions();
     bsi.pushFragment(fragment);
     Log.d(TAG, toString());
