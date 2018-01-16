@@ -75,6 +75,36 @@ public class ScreenCoordinator {
     this.container = container;
     container.setFragmentManager(activity.getSupportFragmentManager());
     // TODO: restore state
+
+    restoreStack();
+  }
+
+  /**
+   * If there are Fragments in the Activity stack, restore them into our backStack. We know the
+   * order in which to restore the Fragments by tagging them with the size of the backStack at the
+   * time they were added.
+   *
+   * This is useful for when the app goes to background on a device with "Don't keep activities"
+   * turned on. It also restores the backStack in case Android kills the app due to memory pressure.
+   */
+  private void restoreStack() {
+    boolean hasFragments = true;
+    int fragmentIndex = 0;
+
+    while (hasFragments) {
+      Fragment fragment = activity.getSupportFragmentManager().findFragmentByTag(String.valueOf(fragmentIndex));
+      if (fragment != null) {
+        if (getCurrentBackStack() == null) {
+          BackStack backStack = new BackStack(getNextStackTag(), PresentAnimation.Modal, null);
+          backStacks.push(backStack);
+        }
+        getCurrentBackStack().pushFragment(fragment);
+
+        fragmentIndex++;
+      } else {
+        hasFragments = false;
+      }
+    }
   }
 
   void onSaveInstanceState(Bundle outState) {
@@ -114,7 +144,7 @@ public class ScreenCoordinator {
     }
     ft
             .detach(currentFragment)
-            .add(container.getId(), fragment)
+            .add(container.getId(), fragment, String.valueOf(bsi.getSize()))
             .addToBackStack(null)
             .commit();
     bsi.pushFragment(fragment);
@@ -190,8 +220,9 @@ public class ScreenCoordinator {
       container.willDetachCurrentScreen();
       ft.detach(currentFragment);
     }
+
     ft
-        .add(container.getId(), fragment)
+        .add(container.getId(), fragment, String.valueOf(bsi.getSize()))
         .addToBackStack(bsi.getTag())
         .commit();
     activity.getSupportFragmentManager().executePendingTransactions();
