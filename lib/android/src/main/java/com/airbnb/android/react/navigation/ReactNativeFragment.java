@@ -48,7 +48,6 @@ public class ReactNativeFragment extends Fragment implements ReactInterface,
   private static final String INSTANCE_ID_PROP = "nativeNavigationInstanceId";
   private static final String ON_BUTTON_PRESS = "onButtonPress";
   private static final String INITIAL_BAR_HEIGHT_PROP = "nativeNavigationInitialBarHeight";
-  private static final int RENDER_TIMEOUT_IN_MS = 1700; // TODO(lmr): put this back down when done debugging
 
   // An incrementing ID to identify each ReactNativeActivity instance (used in `instanceId`)
   private static int UUID = 1;
@@ -145,12 +144,7 @@ public class ReactNativeFragment extends Fragment implements ReactInterface,
       // doing the transition. If this never happens for some reason, we are going to push
       // anyway in 250ms. The handler should get canceled + called sooner though (it's za race).
       isWaitingForRenderToFinish = true;
-      handler.postDelayed(new Runnable() {
-        @Override public void run() {
-          Log.d(TAG, "render timeout callback called");
-          startPostponedEnterTransition();
-        }
-      }, RENDER_TIMEOUT_IN_MS);
+      startPostponedEnterTransition();
     }
 //    activityManager = new ReactInterfaceManager(this);
     reactNavigationCoordinator.registerComponent(this, instanceId);
