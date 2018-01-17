@@ -48,7 +48,7 @@ public class ReactNativeFragment extends Fragment implements ReactInterface,
   private static final String INSTANCE_ID_PROP = "nativeNavigationInstanceId";
   private static final String ON_BUTTON_PRESS = "onButtonPress";
   private static final String INITIAL_BAR_HEIGHT_PROP = "nativeNavigationInitialBarHeight";
-  private static final int RENDER_TIMEOUT_IN_MS = 1700; // TODO(lmr): put this back down when done debugging
+  private static final int RENDER_TIMEOUT_IN_MS = 1;
 
   // An incrementing ID to identify each ReactNativeActivity instance (used in `instanceId`)
   private static int UUID = 1;
