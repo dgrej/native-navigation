@@ -97,11 +97,13 @@ class NavigatorModule extends ReactContextBaseJavaModule {
         if (activity == null) {
           return;
         }
-        ensureCoordinatorComponent(activity);
-        ((ScreenCoordinatorComponent) activity).getScreenCoordinator().pushScreen(
-            screenName,
-            ConversionUtil.toBundle(props),
-            ConversionUtil.toBundle(options));
+
+        if (isCoordinatorComponent(activity)) {
+          ((ScreenCoordinatorComponent) activity).getScreenCoordinator().pushScreen(
+                  screenName,
+                  ConversionUtil.toBundle(props),
+                  ConversionUtil.toBundle(options));
+        }
       }
     });
   }
@@ -127,12 +129,13 @@ class NavigatorModule extends ReactContextBaseJavaModule {
         if (activity == null) {
           return;
         }
-        ensureCoordinatorComponent(activity);
+        if (isCoordinatorComponent(activity)) {
           ((ScreenCoordinatorComponent) activity).getScreenCoordinator().presentScreen(
-            screenName,
-            ConversionUtil.toBundle(props),
-            ConversionUtil.toBundle(options),
-            promise);
+                  screenName,
+                  ConversionUtil.toBundle(props),
+                  ConversionUtil.toBundle(options),
+                  promise);
+        }
       }
     });
   }
@@ -158,8 +161,10 @@ class NavigatorModule extends ReactContextBaseJavaModule {
         if (activity == null) {
           return;
         }
-        ensureCoordinatorComponent(activity);
-        ((ScreenCoordinatorComponent) activity).getScreenCoordinator().dismiss(Activity.RESULT_OK, payloadToMap(payload));
+
+        if (isCoordinatorComponent(activity)) {
+          ((ScreenCoordinatorComponent) activity).getScreenCoordinator().dismiss(Activity.RESULT_OK, payloadToMap(payload));
+        }
       }
     });
   }
@@ -175,8 +180,10 @@ class NavigatorModule extends ReactContextBaseJavaModule {
         if (activity == null) {
           return;
         }
-        ensureCoordinatorComponent(activity);
-        ((ScreenCoordinatorComponent) activity).getScreenCoordinator().pop();
+
+        if (isCoordinatorComponent(activity)) {
+          ((ScreenCoordinatorComponent) activity).getScreenCoordinator().pop();
+        }
       }
     });
   }
@@ -222,10 +229,8 @@ class NavigatorModule extends ReactContextBaseJavaModule {
     activity.finish();
   }
 
-  private void ensureCoordinatorComponent(Activity activity) {
-    if (!(activity instanceof ScreenCoordinatorComponent)) {
-      throw new IllegalStateException("Your activity must implement ScreenCoordinatorComponent.");
-    }
+  private boolean isCoordinatorComponent(Activity activity) {
+    return activity instanceof ScreenCoordinatorComponent;
   }
 
   /**
