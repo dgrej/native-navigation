@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -26,6 +27,7 @@ class NavigatorModule extends ReactContextBaseJavaModule {
 
   private static final String CLOSE_BEHAVIOR_DISMISS = "dismiss";
   private static final String RESULT_CODE = "resultCode";
+  private static final String TAG = NavigatorModule.class.getSimpleName();
   private final Handler handler = new Handler(Looper.getMainLooper());
   private final ReactNavigationCoordinator coordinator;
 
@@ -97,11 +99,13 @@ class NavigatorModule extends ReactContextBaseJavaModule {
         if (activity == null) {
           return;
         }
-        ensureCoordinatorComponent(activity);
-        ((ScreenCoordinatorComponent) activity).getScreenCoordinator().pushScreen(
-            screenName,
-            ConversionUtil.toBundle(props),
-            ConversionUtil.toBundle(options));
+
+        if (isCoordinatorComponent(activity)) {
+          ((ScreenCoordinatorComponent) activity).getScreenCoordinator().pushScreen(
+                  screenName,
+                  ConversionUtil.toBundle(props),
+                  ConversionUtil.toBundle(options));
+        }
       }
     });
   }
@@ -127,12 +131,13 @@ class NavigatorModule extends ReactContextBaseJavaModule {
         if (activity == null) {
           return;
         }
-        ensureCoordinatorComponent(activity);
+        if (isCoordinatorComponent(activity)) {
           ((ScreenCoordinatorComponent) activity).getScreenCoordinator().presentScreen(
-            screenName,
-            ConversionUtil.toBundle(props),
-            ConversionUtil.toBundle(options),
-            promise);
+                  screenName,
+                  ConversionUtil.toBundle(props),
+                  ConversionUtil.toBundle(options),
+                  promise);
+        }
       }
     });
   }
@@ -158,8 +163,10 @@ class NavigatorModule extends ReactContextBaseJavaModule {
         if (activity == null) {
           return;
         }
-        ensureCoordinatorComponent(activity);
-        ((ScreenCoordinatorComponent) activity).getScreenCoordinator().dismiss(Activity.RESULT_OK, payloadToMap(payload));
+
+        if (isCoordinatorComponent(activity)) {
+          ((ScreenCoordinatorComponent) activity).getScreenCoordinator().dismiss(Activity.RESULT_OK, payloadToMap(payload));
+        }
       }
     });
   }
@@ -175,8 +182,10 @@ class NavigatorModule extends ReactContextBaseJavaModule {
         if (activity == null) {
           return;
         }
-        ensureCoordinatorComponent(activity);
-        ((ScreenCoordinatorComponent) activity).getScreenCoordinator().pop();
+
+        if (isCoordinatorComponent(activity)) {
+          ((ScreenCoordinatorComponent) activity).getScreenCoordinator().pop();
+        }
       }
     });
   }
@@ -222,9 +231,12 @@ class NavigatorModule extends ReactContextBaseJavaModule {
     activity.finish();
   }
 
-  private void ensureCoordinatorComponent(Activity activity) {
-    if (!(activity instanceof ScreenCoordinatorComponent)) {
-      throw new IllegalStateException("Your activity must implement ScreenCoordinatorComponent.");
+  private boolean isCoordinatorComponent(Activity activity) {
+    if (activity instanceof ScreenCoordinatorComponent) {
+      return true;
+    } else {
+      Log.w(TAG, "Activity is not a ScreenCoordinatorComponent.");
+      return false;
     }
   }
 
