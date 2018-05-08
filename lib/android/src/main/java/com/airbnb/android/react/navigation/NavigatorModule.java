@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -26,6 +27,7 @@ class NavigatorModule extends ReactContextBaseJavaModule {
 
   private static final String CLOSE_BEHAVIOR_DISMISS = "dismiss";
   private static final String RESULT_CODE = "resultCode";
+  private static final String TAG = NavigatorModule.class.getSimpleName();
   private final Handler handler = new Handler(Looper.getMainLooper());
   private final ReactNavigationCoordinator coordinator;
 
@@ -230,7 +232,12 @@ class NavigatorModule extends ReactContextBaseJavaModule {
   }
 
   private boolean isCoordinatorComponent(Activity activity) {
-    return activity instanceof ScreenCoordinatorComponent;
+    if (activity instanceof ScreenCoordinatorComponent) {
+      return true;
+    } else {
+      Log.w(TAG, "Activity is not a ScreenCoordinatorComponent.");
+      return false;
+    }
   }
 
   /**
